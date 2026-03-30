@@ -1,17 +1,38 @@
 import { useState, useCallback } from "react"
-import { ShoppingCart } from "@phosphor-icons/react"
+import { useNavigate } from "react-router-dom"
+import { ShoppingCart, ArrowLeft, Storefront, CalendarDots } from "@phosphor-icons/react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet"
+import { Separator } from "@/components/ui/separator"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useStoreSettings } from "@/contexts/StoreSettingsContext"
 import { ProductGrid } from "@/features/pos/components/ProductGrid"
 import { CartPanel } from "@/features/pos/components/CartPanel"
+import { PaymentConfirmDialog } from "@/features/pos/components/PaymentConfirmDialog"
 import { OrderSuccessDialog } from "@/features/pos/components/OrderSuccessDialog"
-import type { CartItem, Product, PaymentMethod } from "@/lib/types"
+import type { CartItem, Product, ProductVariant, PaymentMethod } from "@/lib/types"
+
+function getCartKey(product: Product, variant?: ProductVariant): string {
+  return variant ? `${product.id}-${variant.id}` : product.id
+}
+
 
 export function POSPage() {
+  const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const { settings } = useStoreSettings()
   const [cart, setCart] = useState<CartItem[]>([])
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
+
+  // Payment flow state
+  const [pendingOrder, setPendingOrder] = useState<{
+    customerName: string
+    discount: number
+    subtotal: number
+    tax: number
+    total: number
+  } | null>(null)
+
   const [orderSuccess, setOrderSuccess] = useState<{
     orderId: string
     items: CartItem[]
@@ -25,72 +46,110 @@ export function POSPage() {
     change: number
   } | null>(null)
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: Product, variant?: ProductVariant) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id)
+      const key = getCartKey(product, variant)
+      const existing = prev.find(
+        (item) =>
+          item.product.id === product.id &&
+          item.selectedVariant?.id === variant?.id
+      )
       if (existing) {
-        if (existing.quantity >= product.stock) return prev
-        return prev.map((item) =>
-          item.product.id === product.id
+        const maxStock = variant?.stock ?? product.stock
+        if (existing.quantity >= maxStock) return prev
+        return prev.map((item) => {
+          const itemKey = getCartKey(item.product, item.selectedVariant)
+          return itemKey === key
             ? { ...item, quantity: item.quantity + 1 }
             : item
-        )
+        })
       }
-      return [...prev, { product, quantity: 1, discount: 0 }]
+      return [...prev, { product, selectedVariant: variant, quantity: 1, discount: 0 }]
     })
   }, [])
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+  const updateQuantity = useCallback((cartKey: string, quantity: number) => {
     if (quantity <= 0) {
-      setCart((prev) => prev.filter((item) => item.product.id !== productId))
+      setCart((prev) =>
+        prev.filter(
+          (item) => getCartKey(item.product, item.selectedVariant) !== cartKey
+        )
+      )
     } else {
       setCart((prev) =>
         prev.map((item) =>
-          item.product.id === productId ? { ...item, quantity } : item
+          getCartKey(item.product, item.selectedVariant) === cartKey
+            ? { ...item, quantity }
+            : item
         )
       )
     }
   }, [])
 
-  const removeItem = useCallback((productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId))
+  const removeItem = useCallback((cartKey: string) => {
+    setCart((prev) =>
+      prev.filter(
+        (item) => getCartKey(item.product, item.selectedVariant) !== cartKey
+      )
+    )
   }, [])
 
   const clearCart = useCallback(() => setCart([]), [])
 
-  const processOrder = useCallback(
+  // Step 1: Cart triggers processOrder → opens payment dialog
+  const handleProcessOrder = useCallback(
     (data: {
       customerName: string
-      paymentMethod: PaymentMethod
-      amountPaid: number
       discount: number
       subtotal: number
       tax: number
       total: number
     }) => {
+      setPendingOrder(data)
+      setMobileCartOpen(false)
+    },
+    []
+  )
+
+  // Step 2: Payment dialog confirms → creates order → shows receipt
+  const handlePaymentConfirm = useCallback(
+    (paymentMethod: PaymentMethod, amountPaid: number) => {
+      if (!pendingOrder) return
       const orderId = `TXN-${String(Date.now()).slice(-6)}`
-      const change = data.paymentMethod === "cash" ? Math.max(0, data.amountPaid - data.total) : 0
+      const change = paymentMethod === "cash" ? Math.max(0, amountPaid - pendingOrder.total) : 0
 
       setOrderSuccess({
         orderId,
         items: [...cart],
-        customerName: data.customerName,
-        paymentMethod: data.paymentMethod,
-        subtotal: data.subtotal,
-        discount: data.discount,
-        tax: data.tax,
-        total: data.total,
-        amountPaid: data.amountPaid,
+        customerName: pendingOrder.customerName,
+        paymentMethod,
+        subtotal: pendingOrder.subtotal,
+        discount: pendingOrder.discount,
+        tax: pendingOrder.tax,
+        total: pendingOrder.total,
+        amountPaid,
         change,
       })
 
       setCart([])
-      setMobileCartOpen(false)
+      setPendingOrder(null)
     },
-    [cart]
+    [cart, pendingOrder]
   )
 
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+
+  const now = new Date()
+  const dateStr = now.toLocaleDateString("id-ID", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+  const timeStr = now.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 
   const cartPanel = (
     <CartPanel
@@ -98,12 +157,38 @@ export function POSPage() {
       onUpdateQuantity={updateQuantity}
       onRemoveItem={removeItem}
       onClearCart={clearCart}
-      onProcessOrder={processOrder}
+      onProcessOrder={handleProcessOrder}
     />
   )
 
   return (
     <div className="flex h-svh flex-col">
+      {/* ── POS Header ───────────────────────────────────────── */}
+      <header className="flex h-12 shrink-0 items-center gap-3 border-b bg-card px-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 -ml-1 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/dashboard")}
+        >
+          <ArrowLeft size={16} />
+          <span className="hidden sm:inline text-xs">Dashboard</span>
+        </Button>
+
+        <Separator orientation="vertical" className="h-5" />
+
+        <div className="flex items-center gap-1.5">
+          <Storefront size={16} weight="duotone" className="text-primary" />
+          <span className="text-sm font-semibold">{settings.storeName}</span>
+        </div>
+
+        <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+          <CalendarDots size={14} />
+          <span className="hidden sm:inline">{dateStr}</span>
+          <span>{timeStr}</span>
+        </div>
+      </header>
+
       {/* Mobile Cart FAB */}
       {isMobile && cart.length > 0 && (
         <Sheet open={mobileCartOpen} onOpenChange={setMobileCartOpen}>
@@ -143,7 +228,21 @@ export function POSPage() {
         )}
       </div>
 
-      {/* Order Success Dialog */}
+      {/* Payment Confirm Dialog */}
+      {pendingOrder && (
+        <PaymentConfirmDialog
+          open={!!pendingOrder}
+          onClose={() => setPendingOrder(null)}
+          items={cart}
+          subtotal={pendingOrder.subtotal}
+          discount={pendingOrder.discount}
+          tax={pendingOrder.tax}
+          total={pendingOrder.total}
+          onConfirm={handlePaymentConfirm}
+        />
+      )}
+
+      {/* Order Success / Receipt Dialog */}
       {orderSuccess && (
         <OrderSuccessDialog
           open={!!orderSuccess}

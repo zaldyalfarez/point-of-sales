@@ -98,13 +98,24 @@ export const mockPaymentBreakdown: PaymentBreakdown[] = [
 // ── Products ────────────────────────────────────────────────────────
 
 export const mockProducts: Product[] = [
-  { id: "PRD-001", name: "Arabica Coffee Beans 1kg", sku: "COF-ARB-1KG", category: "Coffee", categoryId: "CAT-001", description: "Premium single-origin Arabica beans from Gayo, Aceh", price: 185000, cost: 120000, stock: 142, minStock: 20, status: "in_stock", createdAt: "2025-01-15T08:00:00Z", updatedAt: "2025-03-20T14:30:00Z" },
+  { id: "PRD-001", name: "Arabica Coffee Beans", sku: "COF-ARB", category: "Coffee", categoryId: "CAT-001", description: "Premium single-origin Arabica beans from Gayo, Aceh", price: 185000, cost: 120000, stock: 192, minStock: 20, status: "in_stock", variants: [
+    { id: "VAR-001A", name: "250g", sku: "COF-ARB-250G", priceAdjustment: -130000, stock: 30 },
+    { id: "VAR-001B", name: "500g", sku: "COF-ARB-500G", priceAdjustment: -85000, stock: 20 },
+    { id: "VAR-001C", name: "1kg", sku: "COF-ARB-1KG", priceAdjustment: 0, stock: 142 },
+  ], createdAt: "2025-01-15T08:00:00Z", updatedAt: "2025-03-20T14:30:00Z" },
   { id: "PRD-002", name: "Robusta Coffee Beans 500g", sku: "COF-ROB-500G", category: "Coffee", categoryId: "CAT-001", description: "Strong Robusta beans from Lampung", price: 95000, cost: 55000, stock: 8, minStock: 15, status: "low_stock", createdAt: "2025-01-15T08:00:00Z", updatedAt: "2025-03-18T10:00:00Z" },
-  { id: "PRD-003", name: "Matcha Latte Powder 250g", sku: "TEA-MAT-250G", category: "Tea", categoryId: "CAT-002", description: "Japanese ceremonial grade matcha powder", price: 125000, cost: 80000, stock: 56, minStock: 10, status: "in_stock", createdAt: "2025-02-01T08:00:00Z", updatedAt: "2025-03-22T09:15:00Z" },
+  { id: "PRD-003", name: "Matcha Latte Powder", sku: "TEA-MAT", category: "Tea", categoryId: "CAT-002", description: "Japanese ceremonial grade matcha powder", price: 125000, cost: 80000, stock: 76, minStock: 10, status: "in_stock", variants: [
+    { id: "VAR-003A", name: "100g", sku: "TEA-MAT-100G", priceAdjustment: -60000, stock: 20 },
+    { id: "VAR-003B", name: "250g", sku: "TEA-MAT-250G", priceAdjustment: 0, stock: 56 },
+  ], createdAt: "2025-02-01T08:00:00Z", updatedAt: "2025-03-22T09:15:00Z" },
   { id: "PRD-004", name: "Oat Milk 1L", sku: "MLK-OAT-1L", category: "Dairy", categoryId: "CAT-003", description: "Plant-based oat milk, barista edition", price: 45000, cost: 28000, stock: 0, minStock: 10, status: "out_of_stock", createdAt: "2025-01-20T08:00:00Z", updatedAt: "2025-03-25T16:00:00Z" },
   { id: "PRD-005", name: "Vanilla Syrup 750ml", sku: "SYR-VAN-750", category: "Syrup", categoryId: "CAT-004", description: "Premium French vanilla flavored syrup", price: 68000, cost: 35000, stock: 34, minStock: 5, status: "in_stock", createdAt: "2025-02-10T08:00:00Z", updatedAt: "2025-03-15T11:30:00Z" },
   { id: "PRD-006", name: "Caramel Syrup 750ml", sku: "SYR-CAR-750", category: "Syrup", categoryId: "CAT-004", description: "Rich buttery caramel flavored syrup", price: 68000, cost: 35000, stock: 5, minStock: 5, status: "low_stock", createdAt: "2025-02-10T08:00:00Z", updatedAt: "2025-03-24T13:00:00Z" },
-  { id: "PRD-007", name: "Croissant (Plain)", sku: "BKR-CRO-PLN", category: "Bakery", categoryId: "CAT-005", description: "Freshly baked butter croissant", price: 28000, cost: 12000, stock: 24, minStock: 10, status: "in_stock", createdAt: "2025-03-01T08:00:00Z", updatedAt: "2025-03-27T07:00:00Z" },
+  { id: "PRD-007", name: "Croissant", sku: "BKR-CRO", category: "Bakery", categoryId: "CAT-005", description: "Freshly baked butter croissant", price: 28000, cost: 12000, stock: 40, minStock: 10, status: "in_stock", variants: [
+    { id: "VAR-007A", name: "Plain", sku: "BKR-CRO-PLN", priceAdjustment: 0, stock: 24 },
+    { id: "VAR-007B", name: "Chocolate", sku: "BKR-CRO-CHO", priceAdjustment: 7000, stock: 10 },
+    { id: "VAR-007C", name: "Almond", sku: "BKR-CRO-ALM", priceAdjustment: 10000, stock: 6 },
+  ], createdAt: "2025-03-01T08:00:00Z", updatedAt: "2025-03-27T07:00:00Z" },
   { id: "PRD-008", name: "Chocolate Muffin", sku: "BKR-MUF-CHO", category: "Bakery", categoryId: "CAT-005", description: "Double chocolate chip muffin", price: 32000, cost: 14000, stock: 18, minStock: 8, status: "in_stock", createdAt: "2025-03-01T08:00:00Z", updatedAt: "2025-03-27T07:00:00Z" },
   { id: "PRD-009", name: "Paper Cup 12oz (100pcs)", sku: "SUP-CUP-12", category: "Supplies", categoryId: "CAT-006", description: "Disposable paper cups with logo print", price: 75000, cost: 45000, stock: 200, minStock: 50, status: "in_stock", createdAt: "2025-01-05T08:00:00Z", updatedAt: "2025-03-10T08:00:00Z" },
   { id: "PRD-010", name: "Plastic Straw (500pcs)", sku: "SUP-STR-500", category: "Supplies", categoryId: "CAT-006", description: "Eco-friendly biodegradable straws", price: 35000, cost: 18000, stock: 3, minStock: 10, status: "low_stock", createdAt: "2025-01-05T08:00:00Z", updatedAt: "2025-03-26T10:00:00Z" },

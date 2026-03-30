@@ -85,6 +85,14 @@ export type UpdateCategoryRequest = Partial<CreateCategoryRequest>
 
 export type ProductStatus = "in_stock" | "low_stock" | "out_of_stock"
 
+export interface ProductVariant {
+  id: string
+  name: string
+  sku: string
+  priceAdjustment: number
+  stock: number
+}
+
 export interface Product {
   id: string
   name: string
@@ -98,6 +106,7 @@ export interface Product {
   minStock: number
   status: ProductStatus
   image?: string
+  variants?: ProductVariant[]
   createdAt: string
   updatedAt: string
 }
@@ -152,6 +161,7 @@ export interface Transaction {
 
 export interface CartItem {
   product: Product
+  selectedVariant?: ProductVariant
   quantity: number
   discount: number
 }
