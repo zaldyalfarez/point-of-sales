@@ -53,7 +53,12 @@ const navMain = [
   {
     label: "Management",
     items: [
-      { title: "Products", url: "/dashboard/products", icon: Package, showStockBadge: true },
+      {
+        title: "Products",
+        url: "/dashboard/products",
+        icon: Package,
+        showStockBadge: true,
+      },
       { title: "Categories", url: "/dashboard/categories", icon: Tag },
       { title: "Promotions", url: "/dashboard/promotions", icon: Megaphone },
       { title: "Transactions", url: "/dashboard/transactions", icon: Receipt },
@@ -65,7 +70,11 @@ const navMain = [
     items: [
       { title: "Staff", url: "/dashboard/staff", icon: UserList },
       { title: "Shifts", url: "/dashboard/shifts", icon: Clock },
-      { title: "Stock Adjustments", url: "/dashboard/stock-adjustments", icon: Cube },
+      {
+        title: "Stock Adjustments",
+        url: "/dashboard/stock-adjustments",
+        icon: Cube,
+      },
       { title: "Expenses", url: "/dashboard/expenses", icon: Wallet },
     ],
   },
@@ -78,9 +87,7 @@ const navMain = [
   },
   {
     label: "System",
-    items: [
-      { title: "Settings", url: "/dashboard/settings", icon: Gear },
-    ],
+    items: [{ title: "Settings", url: "/dashboard/settings", icon: Gear }],
   },
 ]
 
@@ -101,7 +108,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link to="/dashboard">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Storefront size={18} weight="bold" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -132,9 +139,11 @@ export function AppSidebar() {
                       <Link to={item.url}>
                         <div className="relative">
                           <item.icon size={18} weight="duotone" />
-                          {"showStockBadge" in item && item.showStockBadge && lowStockProducts.length > 0 && (
-                            <span className="absolute -top-1 -right-1.5 flex size-2 rounded-full bg-red-500" />
-                          )}
+                          {"showStockBadge" in item &&
+                            item.showStockBadge &&
+                            lowStockProducts.length > 0 && (
+                              <span className="absolute -top-1 -right-1.5 flex size-2 rounded-full bg-red-500" />
+                            )}
                         </div>
                         <span>{item.title}</span>
                       </Link>
@@ -157,7 +166,7 @@ export function AppSidebar() {
                   className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
                 >
                   <Avatar className="size-8 rounded-lg">
-                    <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs">
+                    <AvatarFallback className="rounded-lg bg-primary text-xs text-primary-foreground">
                       AD
                     </AvatarFallback>
                   </Avatar>
@@ -179,7 +188,7 @@ export function AppSidebar() {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="size-8 rounded-lg">
-                      <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs">
+                      <AvatarFallback className="rounded-lg bg-primary text-xs text-primary-foreground">
                         AD
                       </AvatarFallback>
                     </Avatar>
