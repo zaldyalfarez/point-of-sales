@@ -22,17 +22,15 @@ export function App() {
   return (
     <HashRouter>
       <Routes>
-        {/* Auth */}
-        <Route path="/login" element={<LoginPage />} />
+        {/* Root = Login */}
+        <Route path="/" element={<LoginPage />} />
 
-        {/* POS Terminal (full-screen, no sidebar) */}
+        {/* POS */}
         <Route path="/pos" element={<POSPage />} />
 
         {/* Dashboard */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
-
-          {/* Management */}
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/new" element={<ProductFormPage />} />
           <Route path="products/:id/edit" element={<ProductFormPage />} />
@@ -40,25 +38,19 @@ export function App() {
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
           <Route path="customers" element={<CustomersPage />} />
-
-          {/* Operations */}
           <Route path="staff" element={<StaffPage />} />
           <Route path="staff/new" element={<StaffFormPage />} />
           <Route path="staff/:id/edit" element={<StaffFormPage />} />
           <Route path="shifts" element={<ShiftManagementPage />} />
           <Route path="stock-adjustments" element={<StockAdjustmentPage />} />
           <Route path="expenses" element={<ExpensesPage />} />
-
-          {/* Analytics */}
           <Route path="reports" element={<ReportsPage />} />
           <Route path="audit-log" element={<AuditLogPage />} />
-
-          {/* System */}
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Redirect root to dashboard */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
     </HashRouter>
   )
