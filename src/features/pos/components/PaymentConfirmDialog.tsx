@@ -138,15 +138,22 @@ export function PaymentConfirmDialog({
               {/* Order summary */}
               <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-xs mb-4">
                 {items.map((item) => (
-                  <div key={`${item.product.id}-${item.selectedVariant?.id ?? ""}`} className="flex justify-between">
-                    <span className="truncate mr-2">
-                      {item.product.name}
-                      {item.selectedVariant && ` (${item.selectedVariant.name})`}
-                      {" × "}{item.quantity}
-                    </span>
-                    <span className="shrink-0 font-medium">
-                      {formatCurrency(getItemPrice(item) * item.quantity)}
-                    </span>
+                  <div key={`${item.product.id}-${item.selectedVariant?.id ?? ""}`}>
+                    <div className="flex justify-between">
+                      <span className="truncate mr-2">
+                        {item.product.name}
+                        {item.selectedVariant && ` (${item.selectedVariant.name})`}
+                        {" × "}{item.quantity}
+                      </span>
+                      <span className="shrink-0 font-medium">
+                        {formatCurrency(getItemPrice(item) * item.quantity)}
+                      </span>
+                    </div>
+                    {item.notes && (
+                      <p className="text-[9px] text-amber-600 dark:text-amber-400 italic ml-2">
+                        📝 {item.notes}
+                      </p>
+                    )}
                   </div>
                 ))}
                 <Separator className="my-1.5" />

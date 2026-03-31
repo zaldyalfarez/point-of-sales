@@ -106,11 +106,20 @@ export function OrderSuccessDialog({
           {/* Items */}
           <div className="space-y-1.5">
             {items.map((item) => (
-              <div key={item.product.id} className="flex justify-between">
-                <span>
-                  {item.product.name} × {item.quantity}
-                </span>
-                <span>{formatCurrency(item.product.price * item.quantity)}</span>
+              <div key={`${item.product.id}-${item.selectedVariant?.id ?? ""}`}>
+                <div className="flex justify-between">
+                  <span>
+                    {item.product.name}
+                    {item.selectedVariant && ` (${item.selectedVariant.name})`}
+                    {" × "}{item.quantity}
+                  </span>
+                  <span>{formatCurrency((item.product.price + (item.selectedVariant?.priceAdjustment ?? 0)) * item.quantity)}</span>
+                </div>
+                {item.notes && (
+                  <p className="text-[9px] text-muted-foreground italic ml-2">
+                    Note: {item.notes}
+                  </p>
+                )}
               </div>
             ))}
           </div>

@@ -1,18 +1,23 @@
 import { useState, useMemo } from "react"
-import { MagnifyingGlass } from "@phosphor-icons/react"
+import { MagnifyingGlass, NotePencil } from "@phosphor-icons/react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { mockProducts, mockCategories } from "@/lib/mock-data"
 import type { Product, ProductVariant } from "@/lib/types"
 
 interface ProductGridProps {
-  onAddToCart: (product: Product, variant?: ProductVariant) => void
+  onAddToCart: (product: Product, variant?: ProductVariant, notes?: string) => void
 }
 
 function formatCurrency(amount: number) {
@@ -24,45 +29,200 @@ function formatCurrency(amount: number) {
 }
 
 const categoryEmojis: Record<string, string> = {
-  "CAT-001": "☕",  // Coffee
-  "CAT-002": "🍵",  // Tea
-  "CAT-003": "🥛",  // Dairy
-  "CAT-004": "🧴",  // Syrup
-  "CAT-005": "🥐",  // Bakery
-  "CAT-006": "📦",  // Supplies
+  "CAT-001": "☕",
+  "CAT-002": "🍵",
+  "CAT-003": "🥛",
+  "CAT-004": "🧴",
+  "CAT-005": "🥐",
+  "CAT-006": "📦",
 }
 
 function getEmojiForCategory(categoryId: string) {
   return categoryEmojis[categoryId] || "📦"
 }
 
-function ProductCard({
+/** Modal for selecting variant + adding notes */
+function ProductDetailDialog({
   product,
-  onSelect,
+  open,
+  onClose,
+  onConfirm,
 }: {
-  product: Product
-  onSelect: (product: Product, variant?: ProductVariant) => void
+  product: Product | null
+  open: boolean
+  onClose: () => void
+  onConfirm: (product: Product, variant?: ProductVariant, notes?: string) => void
 }) {
-  const [popoverOpen, setPopoverOpen] = useState(false)
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+  const [notes, setNotes] = useState("")
+
+  if (!product) return null
+
   const hasVariants = product.variants && product.variants.length > 0
   const emoji = getEmojiForCategory(product.categoryId)
+  const activePrice = hasVariants && selectedVariant
+    ? product.price + selectedVariant.priceAdjustment
+    : product.price
+  const activeStock = hasVariants && selectedVariant
+    ? selectedVariant.stock
+    : product.stock
 
-  const handleClick = () => {
-    if (hasVariants) {
-      setPopoverOpen(true)
-    } else {
-      onSelect(product)
+  const canAdd = hasVariants ? selectedVariant !== null && activeStock > 0 : activeStock > 0
+
+  const handleAdd = () => {
+    if (!canAdd) return
+    onConfirm(product, selectedVariant ?? undefined, notes.trim() || undefined)
+    setSelectedVariant(null)
+    setNotes("")
+    onClose()
+  }
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setSelectedVariant(null)
+      setNotes("")
+      onClose()
     }
   }
 
-  const handleVariantPick = (variant: ProductVariant) => {
-    onSelect(product, variant)
-    setPopoverOpen(false)
-  }
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-sm gap-0 p-0 overflow-hidden">
+        <DialogHeader className="p-5 pb-3">
+          <div className="flex items-start gap-3">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-2xl">
+              {emoji}
+            </div>
+            <div className="min-w-0">
+              <DialogTitle className="text-base leading-tight">{product.name}</DialogTitle>
+              <DialogDescription className="mt-0.5 text-xs">
+                {product.category} · {product.sku}
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
 
-  const card = (
+        <div className="px-5 pb-4 space-y-4">
+          {/* Description */}
+          {product.description && (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {product.description}
+            </p>
+          )}
+
+          {/* Variant Selection */}
+          {hasVariants && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Choose Variant
+              </p>
+              <div className="grid gap-1.5">
+                {product.variants!.map((variant) => {
+                  const variantPrice = product.price + variant.priceAdjustment
+                  const isSelected = selectedVariant?.id === variant.id
+                  const isDisabled = variant.stock <= 0
+                  return (
+                    <button
+                      key={variant.id}
+                      onClick={() => setSelectedVariant(variant)}
+                      disabled={isDisabled}
+                      className={`flex items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : isDisabled
+                            ? "opacity-40 cursor-not-allowed border-transparent"
+                            : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {/* Radio indicator */}
+                        <div className={`flex size-4 items-center justify-center rounded-full border-2 transition-colors ${
+                          isSelected ? "border-primary" : "border-muted-foreground/30"
+                        }`}>
+                          {isSelected && (
+                            <div className="size-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-xs font-medium">{variant.name}</span>
+                          <span className="ml-1.5 text-[10px] text-muted-foreground">
+                            ({variant.stock} left)
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`text-xs font-bold ${isSelected ? "text-primary" : ""}`}>
+                        {formatCurrency(variantPrice)}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Price & Stock (non-variant) */}
+          {!hasVariants && (
+            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5">
+              <span className="text-xs text-muted-foreground">
+                Stock: <span className="font-medium text-foreground">{product.stock}</span>
+              </span>
+              <span className="text-sm font-bold">{formatCurrency(product.price)}</span>
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <NotePencil size={13} />
+              Notes (optional)
+            </label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. less sugar, extra hot, no ice..."
+              rows={2}
+              className="text-xs resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex gap-2 border-t bg-muted/30 p-4">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => handleOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="flex-1"
+            disabled={!canAdd}
+            onClick={handleAdd}
+          >
+            Add to Cart — {formatCurrency(activePrice)}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ProductCard({
+  product,
+  onClick,
+}: {
+  product: Product
+  onClick: (product: Product) => void
+}) {
+  const hasVariants = product.variants && product.variants.length > 0
+  const emoji = getEmojiForCategory(product.categoryId)
+
+  return (
     <button
-      onClick={handleClick}
+      onClick={() => onClick(product)}
       className="group flex flex-col rounded-lg border bg-card p-3 text-left transition-all hover:border-primary hover:shadow-sm active:scale-[0.98] relative overflow-hidden"
     >
       {/* Category emoji */}
@@ -91,45 +251,12 @@ function ProductCard({
       </div>
     </button>
   )
-
-  if (!hasVariants) return card
-
-  return (
-    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-      <PopoverTrigger asChild>{card}</PopoverTrigger>
-      <PopoverContent className="w-56 p-1.5" align="start" side="right" sideOffset={4}>
-        <p className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-          Choose variant
-        </p>
-        <div className="space-y-0.5">
-          {product.variants!.map((variant) => {
-            const variantPrice = product.price + variant.priceAdjustment
-            return (
-              <button
-                key={variant.id}
-                onClick={() => handleVariantPick(variant)}
-                disabled={variant.stock <= 0}
-                className="flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left transition-colors hover:bg-muted active:bg-muted/70 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <div>
-                  <span className="text-xs font-medium">{variant.name}</span>
-                  <span className="ml-1.5 text-[10px] text-muted-foreground">
-                    ({variant.stock} left)
-                  </span>
-                </div>
-                <span className="text-xs font-bold">{formatCurrency(variantPrice)}</span>
-              </button>
-            )
-          })}
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
 }
 
 export function ProductGrid({ onAddToCart }: ProductGridProps) {
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState("all")
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   const categories = [{ id: "all", name: "All" }, ...mockCategories]
 
@@ -146,6 +273,15 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
     }
     return result
   }, [search, activeCategory])
+
+  const handleProductClick = (product: Product) => {
+    // All products open the dialog (variant picker + notes)
+    setSelectedProduct(product)
+  }
+
+  const handleConfirm = (product: Product, variant?: ProductVariant, notes?: string) => {
+    onAddToCart(product, variant, notes)
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -187,7 +323,7 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
             <ProductCard
               key={product.id}
               product={product}
-              onSelect={onAddToCart}
+              onClick={handleProductClick}
             />
           ))}
           {filteredProducts.length === 0 && (
@@ -198,6 +334,14 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
           )}
         </div>
       </ScrollArea>
+
+      {/* Product Detail / Variant + Notes Dialog */}
+      <ProductDetailDialog
+        product={selectedProduct}
+        open={selectedProduct !== null}
+        onClose={() => setSelectedProduct(null)}
+        onConfirm={handleConfirm}
+      />
     </div>
   )
 }

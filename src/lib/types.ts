@@ -164,6 +164,7 @@ export interface CartItem {
   selectedVariant?: ProductVariant
   quantity: number
   discount: number
+  notes?: string
 }
 
 export interface OrderDiscount {
