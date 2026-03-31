@@ -46,7 +46,7 @@ export function POSPage() {
     change: number
   } | null>(null)
 
-  const addToCart = useCallback((product: Product, variant?: ProductVariant) => {
+  const addToCart = useCallback((product: Product, variant?: ProductVariant, notes?: string) => {
     setCart((prev) => {
       const key = getCartKey(product, variant)
       const existing = prev.find(
@@ -60,11 +60,11 @@ export function POSPage() {
         return prev.map((item) => {
           const itemKey = getCartKey(item.product, item.selectedVariant)
           return itemKey === key
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + 1, notes: notes || item.notes }
             : item
         })
       }
-      return [...prev, { product, selectedVariant: variant, quantity: 1, discount: 0 }]
+      return [...prev, { product, selectedVariant: variant, quantity: 1, discount: 0, notes }]
     })
   }, [])
 

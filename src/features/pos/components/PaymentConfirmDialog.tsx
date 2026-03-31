@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Backspace,
   CurrencyDollar,
@@ -102,6 +102,21 @@ export function PaymentConfirmDialog({
     }
   }
 
+  // Keyboard support for cash numpad
+  useEffect(() => {
+    if (!open || paymentMethod !== "cash") return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= "0" && e.key <= "9") {
+        handleNumpad(e.key)
+      } else if (e.key === "Backspace") {
+        e.preventDefault()
+        handleNumpad("backspace")
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  })
+
   const handleClose = () => {
     setPaymentMethod(null)
     setAmountStr("")
@@ -138,15 +153,22 @@ export function PaymentConfirmDialog({
               {/* Order summary */}
               <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-xs mb-4">
                 {items.map((item) => (
-                  <div key={`${item.product.id}-${item.selectedVariant?.id ?? ""}`} className="flex justify-between">
-                    <span className="truncate mr-2">
-                      {item.product.name}
-                      {item.selectedVariant && ` (${item.selectedVariant.name})`}
-                      {" × "}{item.quantity}
-                    </span>
-                    <span className="shrink-0 font-medium">
-                      {formatCurrency(getItemPrice(item) * item.quantity)}
-                    </span>
+                  <div key={`${item.product.id}-${item.selectedVariant?.id ?? ""}`}>
+                    <div className="flex justify-between">
+                      <span className="truncate mr-2">
+                        {item.product.name}
+                        {item.selectedVariant && ` (${item.selectedVariant.name})`}
+                        {" × "}{item.quantity}
+                      </span>
+                      <span className="shrink-0 font-medium">
+                        {formatCurrency(getItemPrice(item) * item.quantity)}
+                      </span>
+                    </div>
+                    {item.notes && (
+                      <p className="text-[9px] text-amber-600 dark:text-amber-400 italic ml-2">
+                        📝 {item.notes}
+                      </p>
+                    )}
                   </div>
                 ))}
                 <Separator className="my-1.5" />

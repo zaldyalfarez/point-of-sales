@@ -23,7 +23,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -166,45 +165,57 @@ export function AppSidebar() {
                   className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
                 >
                   <Avatar className="size-8 rounded-lg">
-                    <AvatarFallback className="rounded-lg bg-primary text-xs text-primary-foreground">
-                      AD
+                    <AvatarFallback className="rounded-lg bg-linear-to-br from-violet-500 to-purple-600 text-xs text-white font-bold">
+                      AR
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Admin</span>
+                    <span className="truncate font-semibold">Ahmad Rizal</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      admin@akpos.com
+                      Administrator
                     </span>
                   </div>
                   <CaretUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-xl p-0"
                 side="bottom"
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="size-8 rounded-lg">
-                      <AvatarFallback className="rounded-lg bg-primary text-xs text-primary-foreground">
-                        AD
+                {/* Profile header */}
+                <div className="p-4 pb-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-10 rounded-lg">
+                      <AvatarFallback className="rounded-lg bg-linear-to-br from-violet-500 to-purple-600 text-sm text-white font-bold">
+                        AR
                       </AvatarFallback>
                     </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">Admin</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        admin@akpos.com
-                      </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">Ahmad Rizal</p>
+                      <p className="text-xs text-muted-foreground truncate">ahmad.rizal@akpos.com</p>
                     </div>
                   </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <SignOut className="mr-2 size-4" />
-                  Log out
-                </DropdownMenuItem>
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                      Administrator
+                    </span>
+                    <span className="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                      Active
+                    </span>
+                  </div>
+                </div>
+                <DropdownMenuSeparator className="mx-0" />
+                <div className="p-1.5">
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="rounded-lg text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer gap-2 px-3 py-2.5"
+                  >
+                    <SignOut size={16} weight="duotone" />
+                    <span className="text-sm font-medium">Log out</span>
+                  </DropdownMenuItem>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

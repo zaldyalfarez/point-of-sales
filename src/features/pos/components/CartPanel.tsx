@@ -149,6 +149,11 @@ export function CartPanel({
                     <p className="text-[10px] text-muted-foreground">
                       {formatCurrency(price)} each
                     </p>
+                    {item.notes && (
+                      <p className="text-[10px] text-amber-600 dark:text-amber-400 italic mt-0.5 line-clamp-1" title={item.notes}>
+                        📝 {item.notes}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
