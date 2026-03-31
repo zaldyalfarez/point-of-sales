@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Backspace,
   CurrencyDollar,
@@ -101,6 +101,21 @@ export function PaymentConfirmDialog({
       })
     }
   }
+
+  // Keyboard support for cash numpad
+  useEffect(() => {
+    if (!open || paymentMethod !== "cash") return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= "0" && e.key <= "9") {
+        handleNumpad(e.key)
+      } else if (e.key === "Backspace") {
+        e.preventDefault()
+        handleNumpad("backspace")
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  })
 
   const handleClose = () => {
     setPaymentMethod(null)
